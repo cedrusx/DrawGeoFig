@@ -1,7 +1,0 @@
-B:(0,0)
-C:(2,0)
-A:(0.8,1)
-D:CD-AB;AD-BC
-F:DCF;BF|DC
-E:DAE;BE|DA
-G:FEG;CAG;BG;BD
