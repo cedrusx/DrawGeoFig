@@ -1,0 +1,6 @@
+A:[0,0];[0,1]
+B,D:
+C:AB|AC
+E:DE-AB
+F:InvalidRule
+G:FG-DE;FG-AB
