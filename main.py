@@ -28,12 +28,20 @@ def gettype(rule):
 	return TYPES['UNKNOWN']
 
 class RuleParser:
-	"""A parser to get rules from an input stream."""
+	"""A parser to get rules from an input stream.
+
+	Attributes:
+		dots: a list of names like ['A','B']
+		lines: a list of dot pairs like [['A','B'],['B','C']]
+		dotrules: a list of dot-rule pairs
+	"""
+
+	def __init__(self):
+		self.dots = []
+		self.lines = []
+		self.dotrules = []
 
 	def parse(self, input):
-		dots = []
-		dotrules = []
-		lines = []
 		while True:
 			line = input.readline()
 			if not line:
@@ -41,43 +49,41 @@ class RuleParser:
 			newdot, newrule = line.split(':')
 			newdot = newdot.split(',')
 			newrule = newrule.rstrip(' \n').split(';')
-			dots.extend(newdot)
+			self.dots.extend(newdot)
 			for r in newrule:
 				if r is '':
 					continue
 				if len(r) == 2:
-					lines.append(sorted(r))
+					self.__addlines([r])
 				else:
 					for d in newdot:
-						dotrules.append((d,r))
+						self.dotrules.append((d,r))
 					if len(r) == 3 or DEF_ANGLE in r:
-						self.__addline(lines, [r[0:2], r[1:3]])
+						self.__addlines([r[0:2], r[1:3]])
 					elif DEF_PERP in r:
-						self.__addline(lines, r.split(DEF_PERP))
+						self.__addlines(r.split(DEF_PERP))
 					elif DEF_PARA in r:
-						self.__addline(lines, r.split(DEF_PARA))
-		return dots, dotrules, lines
+						self.__addlines(r.split(DEF_PARA))
 
-	def __addline(self, lines, newlines):
+	def __addlines(self, newlines):
+		"""Avoid duplication when adding a line into self.lines."""
 		for new in newlines:
-			if sorted(new) not in lines:
-				lines.append(sorted(new))
+			if sorted(new) not in self.lines:
+				self.lines.append(sorted(new))
 
-class SmartCalc:
+class SmartCalc(RuleParser):
 	"""Init me with an input stream giving rules, then I'll give you the world
 
 	Attributes:
-		dots: a list of names like ['A','B']
-		lines: a list of dot pairs like [['A','B'],['B','C']]
 		positions: a dict containing the coordinates of each dot
 	"""
 
 	def __init__(self, input):
 		"""All works should be done here."""
-		self.dots, self.dotrules, self.lines = RuleParser().parse(input)
+		RuleParser.__init__(self)
+		self.parse(input)
 		self.positions = {}
 		self.__calcpositions()
-		del self.dotrules
 
 	def __getrulesfordot(self, dot):
 		"""Return all rules for a specified dot."""
@@ -176,7 +182,7 @@ class SmartCalc:
 				logging.error('Invalid rule: ' + rule)
 				return
 		else:
-			logging.error('Unknown rule: ', rule)
+			logging.error('Unknown rule: ' + rule)
 			return
 		# Now we get baseline, basedot and rotation
 		x0,y0 = self.positions[basedot]
